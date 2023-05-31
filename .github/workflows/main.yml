@@ -1,0 +1,27 @@
+name: Deploy
+
+on: workflow_dispatch
+
+jobs:
+  build:
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v3
+        - uses: denoland/setup-deno@v1.1.1
+          with:
+            deno-version: v1.x
+        - run: deno fmt --check
+        - run: deno lint
+        - run: deno test --allow-all
+        # - run: deno test --allow-all --coverage=cov/
+        # - run: deno coverage --lcov cov/ > cov.lcov
+
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: akhileshns/heroku-deploy@v3.12.14
+        with:
+          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
+          heroku_app_name: "drp_server"
+          heroku_email: "ahmedmahmud12971@gmail.com"
