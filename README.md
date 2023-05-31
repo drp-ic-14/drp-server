@@ -2,16 +2,8 @@
 
 ## Installation
 
-macOS and Linux:
-
-```console
-curl -fsSL https://deno.land/x/install/install.sh | sh
 ```
-
-Windows:
-
-```
-scoop install deno
+npm i
 ```
 
 ## Usage
@@ -19,23 +11,5 @@ scoop install deno
 ### Run server:
 
 ```
-deno task dev
-```
-
-or
-
-```
-deno run --allow-net --allow-env app.ts
-```
-
-### Lint:
-
-```
-deno lint
-```
-
-### Format
-
-```
-deno fmt
+npm run dev
 ```
