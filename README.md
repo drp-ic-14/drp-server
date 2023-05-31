@@ -16,19 +16,25 @@ scoop install deno
 
 ## Usage
 
-Run server
+### Run server:
+
+```
+deno task dev
+```
+
+or
 
 ```
 deno run --allow-net --allow-env app.ts
 ```
 
-Lint
+### Lint:
 
 ```
 deno lint
 ```
 
-Format
+### Format
 
 ```
 deno fmt
