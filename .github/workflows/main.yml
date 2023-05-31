@@ -1,20 +1,19 @@
 name: Deploy
 
-on: workflow_dispatch
+on: 
+  push:
+    branches: [ master ]
 
 jobs:
   build:
       runs-on: ubuntu-latest
       steps:
         - uses: actions/checkout@v3
-        - uses: denoland/setup-deno@v1.1.1
+        - uses: actions/setup-node@v3
           with:
-            deno-version: v1.x
-        - run: deno fmt --check
-        - run: deno lint
-        - run: deno test --allow-all
-        # - run: deno test --allow-all --coverage=cov/
-        # - run: deno coverage --lcov cov/ > cov.lcov
+            node-version: 'lts'
+        - run: npm install
+        - run: npm build
 
   deploy:
     runs-on: ubuntu-latest

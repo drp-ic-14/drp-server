@@ -1,0 +1,26 @@
+{
+  "name": "drp_server",
+  "version": "1.0.0",
+  "description": "API Server for DRP",
+  "main": "src/main.ts",
+  "scripts": {
+    "start": "node build/index.js",
+    "build": "tsc",
+    "dev": "nodemon src/index.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/express": "^4.17.17",
+    "@types/node": "^20.2.5",
+    "nodemon": "^2.0.22",
+    "prisma": "^4.15.0",
+    "ts-node": "^10.9.1"
+  },
+  "dependencies": {
+    "typescript": "^5.0.4",
+    "@prisma/client": "^4.15.0",
+    "express": "^4.18.2"
+  }
+}
