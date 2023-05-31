@@ -1,7 +1,6 @@
 # drp_server
 
 ## Installation
----
 macOS and Linux:
 ```console 
 curl -fsSL https://deno.land/x/install/install.sh | sh
@@ -12,7 +11,6 @@ scoop install deno
 ```
 
 ## Usage
----
 Run server
 ```
 deno run --allow-net --allow-env app.ts
