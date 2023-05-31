@@ -1,7 +1,7 @@
 import { Application } from "https://deno.land/x/oak/mod.ts";
 
 const app = new Application();
-const port = parseInt(Deno.env.get('PORT') ?? '8000');
+const port = parseInt(Deno.env.get("PORT") ?? "8000");
 
 // Logger
 app.use(async (ctx, next) => {
