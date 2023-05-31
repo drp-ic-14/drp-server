@@ -23,5 +23,5 @@ jobs:
       - uses: akhileshns/heroku-deploy@v3.12.14
         with:
           heroku_api_key: ${{secrets.HEROKU_API_KEY}}
-          heroku_app_name: "drp_server"
+          heroku_app_name: "drp-14-server"
           heroku_email: "ahmedmahmud12971@gmail.com"
