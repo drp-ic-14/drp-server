@@ -42,7 +42,36 @@ app.post('/api/add_task', async (req: TypedRequestBody<add_task>, res) => {
     }
   });
 
-  res.status(201).json(new_task);
+  res.status(200).json(new_task);
+});
+
+app.post('/api/complete_task', async (req, res) => {
+  const { user_id, task_id } = req.body;
+
+  const completed_task = await prisma.task.update({
+    where: {
+      id: task_id,
+      userId: user_id
+    },
+    data: {
+      completed: true
+    }
+  });
+
+  res.status(200).json(completed_task);
+});
+
+app.post('/api/delete_task', async (req, res) => {
+  const { user_id, task_id } = req.body;
+
+  const deleted_task = await prisma.task.delete({
+    where: {
+      id: task_id,
+      userId: user_id
+    }
+  });
+
+  res.status(200).json(deleted_task);
 });
 
 app.listen(PORT, () => {
