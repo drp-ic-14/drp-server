@@ -33,6 +33,21 @@ app.get('/api/generate_id', async (req, res) => {
   res.json(user);
 });
 
+app.post('/api/get_tasks', async (req: TypedRequestBody<add_task>, res) => {
+  const { user_id, task } = req.body;
+
+  try {
+    const tasks = await prisma.task.findMany({
+      where: {
+        userId: user_id
+      }
+    });
+    res.status(200).json(tasks);
+  } catch (e) {
+    res.status(400).json(e);
+  }
+});
+
 app.post('/api/add_task', async (req: TypedRequestBody<add_task>, res) => {
   const { user_id, task } = req.body;
 
