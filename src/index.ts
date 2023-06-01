@@ -1,16 +1,48 @@
 import express from "express";
+import { Prisma } from '@prisma/client'
 import prisma from "./prisma";
 import dotenv from "dotenv";
 
 dotenv.config();
 
-const app = express()
-const PORT = process.env.PORT || 8000
+const app = express();
+const PORT = process.env.PORT || 8000;
 
-app.use(express.json())
+export interface TypedRequestBody<T> extends Express.Request {
+  body: T
+}
+
+interface add_task {
+  user_id: string;
+  task: Prisma.TaskCreateInput;
+}
+
+app.use(express.json());
 
 app.get('/', (req, res) => {
   res.send('Hello World!');
+});
+
+app.get('/api/generate_id', async (req, res) => {
+  const user = await prisma.user.create({
+    data: {}
+  });
+
+  res.json(user);
+});
+
+app.post('/api/add_task', async (req: TypedRequestBody<add_task>, res) => {
+  const { user_id, task } = req.body;
+
+  const new_task = await prisma.task.create({
+    data: {
+      name: task.name,
+      location: task.location,
+      userId: user_id
+    }
+  });
+
+  res.status(201).json(new_task);
 });
 
 app.listen(PORT, () => {
