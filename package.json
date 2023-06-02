@@ -4,7 +4,7 @@
   "description": "API Server for DRP",
   "main": "src/main.ts",
   "scripts": {
-    "start": "node build/index.js",
+    "start": "node build/src/index.js",
     "build": "prisma generate && tsc",
     "dev": "nodemon src/index.ts",
     "test": "jest",
