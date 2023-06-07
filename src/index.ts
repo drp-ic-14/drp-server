@@ -44,13 +44,13 @@ app.post('/api/get_tasks', async (req: TypedRequestBody<add_task>, res) => {
     });
     res.status(200).json(tasks);
   } catch (e) {
+    console.error(e);
     res.status(400).json(e);
   }
 });
 
 app.post('/api/add_task', async (req: TypedRequestBody<add_task>, res) => {
   const { user_id, task } = req.body;
-
   try {
     const new_task = await prisma.task.create({
       data: {
@@ -84,6 +84,7 @@ app.post('/api/complete_task', async (req, res) => {
   
     res.status(200).json(completed_task);
   } catch (e) {
+    console.error(e);
     res.status(400).json(e);
   }
 });
@@ -101,6 +102,7 @@ app.post('/api/delete_task', async (req, res) => {
   
     res.status(200).json(deleted_task);
   } catch (e) {
+    console.error(e);
     res.status(400).json(e);
   }
 });
