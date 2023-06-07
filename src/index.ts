@@ -56,11 +56,14 @@ app.post('/api/add_task', async (req: TypedRequestBody<add_task>, res) => {
       data: {
         name: task.name,
         location: task.location,
+        latitude: task.latitude,
+        longitude: task.longitude,
         userId: user_id
       }
     });
     res.status(200).json(new_task);
   } catch (e) {
+    console.error(e);
     res.status(400).json(e);
   }
 });
