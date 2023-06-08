@@ -127,11 +127,16 @@ app.post('/api/get_groups', async (req, res) => {
 });
 
 app.post('/api/create_group', async (req, res) => {
-  const { group_name } = req.body;
+  const { group_name, user_id } = req.body;
   try {
     const new_group = await prisma.group.create({
       data: {
         name: group_name,
+        users: {
+          connect: {
+            id: user_id
+          }
+        }
       }
     });
     res.status(200).json(new_group);
