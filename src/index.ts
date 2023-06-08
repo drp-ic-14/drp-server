@@ -34,7 +34,7 @@ app.get('/api/generate_id', async (req, res) => {
 });
 
 app.post('/api/get_tasks', async (req: TypedRequestBody<add_task>, res) => {
-  const { user_id, task } = req.body;
+  const { user_id } = req.body;
 
   try {
     const tasks = await prisma.task.findMany({
@@ -44,23 +44,26 @@ app.post('/api/get_tasks', async (req: TypedRequestBody<add_task>, res) => {
     });
     res.status(200).json(tasks);
   } catch (e) {
+    console.error(e);
     res.status(400).json(e);
   }
 });
 
 app.post('/api/add_task', async (req: TypedRequestBody<add_task>, res) => {
   const { user_id, task } = req.body;
-
   try {
     const new_task = await prisma.task.create({
       data: {
         name: task.name,
         location: task.location,
+        latitude: task.latitude,
+        longitude: task.longitude,
         userId: user_id
       }
     });
     res.status(200).json(new_task);
   } catch (e) {
+    console.error(e);
     res.status(400).json(e);
   }
 });
@@ -81,6 +84,7 @@ app.post('/api/complete_task', async (req, res) => {
   
     res.status(200).json(completed_task);
   } catch (e) {
+    console.error(e);
     res.status(400).json(e);
   }
 });
@@ -98,6 +102,66 @@ app.post('/api/delete_task', async (req, res) => {
   
     res.status(200).json(deleted_task);
   } catch (e) {
+    console.error(e);
+    res.status(400).json(e);
+  }
+});
+
+// get all the groups of the user
+app.post('/api/get_groups', async (req, res) => {
+  const { user_id } = req.body;
+  try {
+    const groups = await prisma.user.findUnique({
+      where: {
+        id: user_id
+      },
+      include: {
+        groups: true
+      }
+    });
+    res.status(200).json(groups);
+  } catch (e) {
+    console.error(e);
+    res.status(400).json(e);
+  }
+});
+
+app.post('/api/create_group', async (req, res) => {
+  const { group_name } = req.body;
+  try {
+    const new_group = await prisma.group.create({
+      data: {
+        name: group_name,
+      }
+    });
+    res.status(200).json(new_group);
+  } catch (e) {
+    console.error(e);
+    res.status(400).json(e);
+  }
+});
+
+app.post('/api/join_group', async (req, res) => {
+  const { user_id, group_id } = req.body;
+  try {
+    const join_group = await prisma.group.update({
+      where: {
+        id: group_id
+      },
+      data: {
+        users: {
+          connect: {
+            id: user_id
+          }
+        }
+      },
+      include: {
+        users: true
+      }
+    });
+    res.status(200).json(join_group);
+  } catch (e) {
+    console.error(e);
     res.status(400).json(e);
   }
 });
