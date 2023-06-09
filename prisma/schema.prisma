@@ -12,17 +12,28 @@ datasource db {
 }
 
 model User {
-  id    String     @id @default(uuid())
-  tasks Task[]
+  id         String      @id @default(uuid())
+tasks      Task[]      @relation("UserTasks")
+  groups     Group[]     @relation("GroupMembers")
+}
+
+model Group {
+  id         String      @id @default(uuid())
+  name       String
+  groupTask  Task[]      @relation("GroupTasks")
+  users      User[]      @relation("GroupMembers")
 }
 
 model Task {
-  id        Int     @id @default(autoincrement())
-  name      String
-  location  String
-  latitude Float
-  longitude Float
-  completed Boolean @default(false)
-  user    User    @relation(fields: [userId], references: [id])
-  userId  String
+  id         Int         @id @default(autoincrement())
+  name       String
+  location   String
+  latitude   Float
+  longitude  Float
+  completed  Boolean     @default(false)
+  groupTask  Boolean     @default(false)
+  user       User?       @relation("UserTasks", fields: [userId], references: [id])
+  group      Group?      @relation("GroupTasks", fields: [groupId], references: [id])
+  userId     String?
+  groupId    String?
 }
