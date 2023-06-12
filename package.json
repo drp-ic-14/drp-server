@@ -3,10 +3,11 @@
   "version": "1.0.0",
   "description": "API Server for DRP",
   "main": "src/main.ts",
+  "type": "module",
   "scripts": {
     "start": "node build/src/index.js",
     "build": "prisma generate && tsc",
-    "dev": "nodemon src/index.ts",
+    "dev": "tsx watch --tsconfig ./tsconfig.json ./src/index.ts",
     "test": "jest",
     "test:watch": "jest --watch"
   },
@@ -23,13 +24,15 @@
     "prisma": "^4.15.0",
     "supertest": "^6.3.3",
     "ts-jest": "^29.1.0",
-    "ts-node": "^10.9.1"
+    "ts-node": "^10.9.1",
+    "tsx": "^3.12.7"
   },
   "dependencies": {
     "@prisma/client": "^4.15.0",
     "dotenv": "^16.1.2",
     "express": "^4.18.2",
     "morgan": "^1.10.0",
+    "node-fetch": "^3.3.1",
     "typescript": "^5.0.4"
   }
 }
