@@ -1,9 +1,10 @@
 import express from "express";
 import { Prisma } from "@prisma/client";
-import prisma from "./prisma";
 import dotenv from "dotenv";
 import morgan from "morgan";
 import fetch from "node-fetch";
+
+import prisma from "./prisma.js";
 
 dotenv.config();
 
