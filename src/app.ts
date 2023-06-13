@@ -57,14 +57,19 @@ app.post("/api/create_user", async (req, res) => {
   const { user_id } = req.body;
   console.log(`Creating new user '${user_id}'.`)
 
-  const user = await prisma.user.create({
-    data: {
-      id: user_id
-    }
-  })
-  res.status(200).json(user);
-  console.log(`Created new user '${user_id}'.`)
-})
+  try {
+    const user = await prisma.user.create({
+      data: {
+        id: user_id
+      }
+    });
+
+    res.status(200).json(user);
+    console.log(`Created new user '${user_id}'.`)
+  } catch {
+    res.sendStatus(400);
+  }
+});
 
 app.post("/api/get_tasks", async (req: TypedRequestBody<add_task>, res) => {
   const { user_id } = req.body;
