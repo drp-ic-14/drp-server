@@ -35,6 +35,22 @@ app.get("/api/generate_id", async (req, res) => {
   res.json(user);
 });
 
+app.post("/api/check_id", async (req: TypedRequestBody<any>, res) => {
+  const { user_id } = req.body;
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: {
+        id: user_id,
+      },
+    })
+    res.status(200).json(user ? true : false);
+  } catch (e) {
+    console.error(e);
+    res.status(400).json(e);
+  }
+})
+
 app.post("/api/get_tasks", async (req: TypedRequestBody<add_task>, res) => {
   const { user_id } = req.body;
 
