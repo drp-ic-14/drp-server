@@ -32,8 +32,8 @@ app.post("/api/get_tasks", async (req, res) => {
         res.status(400).json(e);
     }
 });
-app.post("/api/add_task", async (req, res) => {
-    const { user_id, task } = req.body;
+app.post('/api/add_task', async (req, res) => {
+    const { user_id, task, group_id } = req.body;
     try {
         const new_task = await prisma.task.create({
             data: {
@@ -41,8 +41,9 @@ app.post("/api/add_task", async (req, res) => {
                 location: task.location,
                 latitude: task.latitude,
                 longitude: task.longitude,
-                userId: user_id,
-            },
+                userId: user_id || undefined,
+                groupId: group_id || undefined,
+            }
         });
         res.status(200).json(new_task);
     }
