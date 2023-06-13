@@ -151,7 +151,12 @@ app.post("/api/get_groups", async (req, res) => {
         id: user_id,
       },
       include: {
-        groups: true,
+        groups: {
+          include: {
+            groupTask: true,
+            users: true
+          }
+        }
       },
     });
     res.status(200).json(groups);
