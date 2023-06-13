@@ -1,6 +1,6 @@
 import { withFilter } from "graphql-subscriptions";
-import prisma from "../clients/prisma";
-import pubsub from "../clients/pubsub";
+import prisma from "../clients/prisma.js";
+import pubsub from "../clients/pubsub.js";
 
 export const resolvers = {
   Query: {

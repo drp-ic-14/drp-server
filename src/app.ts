@@ -64,8 +64,34 @@ app.post("/api/create_user", async (req, res) => {
       }
     });
 
-    res.status(200).json(user);
     console.log(`Created new user '${user_id}'.`)
+    res.status(200).json(user);
+  } catch {
+    res.sendStatus(400);
+  }
+});
+
+app.post("/api/get_user", async (req, res) => {
+  const { user_id } = req.body;
+  console.log(`Fetching '${user_id}'.`)
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: {
+        id: user_id
+      },
+      include: {
+        groups: {
+          include: {
+            groupTask: true,
+            users: true
+          },
+        },
+        tasks: true
+      }
+    });
+
+    res.status(200).json(user);
   } catch {
     res.sendStatus(400);
   }
