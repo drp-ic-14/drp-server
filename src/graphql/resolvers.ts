@@ -3,7 +3,17 @@ import pubsub from "../clients/pubsub";
 
 export const resolvers = {
   Query: {
-    users: () => prisma.user.findMany(),
+    users: () => prisma.user.findMany({
+      include: {
+        tasks: true,
+        groups: {
+          include: {
+            groupTask: true,
+            users: true
+          }
+        }
+      }
+    }),
   },
   Subscription: {
     userAdded: {

@@ -13,7 +13,8 @@ interface TypedRequestBody<T> extends Express.Request {
 }
 
 interface add_task {
-  user_id: string;
+  user_id?: string;
+  group_id?: string;
   task: Prisma.TaskCreateInput;
 }
 
@@ -53,7 +54,7 @@ app.post("/api/get_tasks", async (req: TypedRequestBody<add_task>, res) => {
 });
 
 app.post("/api/add_task", async (req: TypedRequestBody<add_task>, res) => {
-  const { user_id, task } = req.body;
+  const { user_id, task, group_id } = req.body;
   try {
     const new_task = await prisma.task.create({
       data: {
@@ -61,7 +62,8 @@ app.post("/api/add_task", async (req: TypedRequestBody<add_task>, res) => {
         location: task.location,
         latitude: task.latitude,
         longitude: task.longitude,
-        userId: user_id,
+        userId: user_id || undefined,
+        groupId: group_id || undefined,
       },
     });
     res.status(200).json(new_task);
