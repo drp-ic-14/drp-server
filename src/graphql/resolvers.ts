@@ -1,3 +1,4 @@
+import { withFilter } from "graphql-subscriptions";
 import prisma from "../clients/prisma";
 import pubsub from "../clients/pubsub";
 
@@ -16,8 +17,11 @@ export const resolvers = {
     }),
   },
   Subscription: {
-    userAdded: {
-      subscribe: () => pubsub.asyncIterator(["USER_CREATED"]),
-    },
+    user: {
+      subscribe: withFilter(
+        () => pubsub.asyncIterator(["USER_UPDATE"]),
+        (payload, variables) => payload.user.id === variables.id
+      ) 
+    }
   },
 };

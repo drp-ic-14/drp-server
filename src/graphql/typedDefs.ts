@@ -6,7 +6,7 @@ export const typeDefs = gql`
   }
 
   type Subscription {
-    userAdded: User
+    user(id: ID!): User
   }
 
   type User {

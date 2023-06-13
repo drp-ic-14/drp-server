@@ -66,6 +66,36 @@ app.post("/api/add_task", async (req: TypedRequestBody<add_task>, res) => {
         groupId: group_id || undefined,
       },
     });
+
+    if (group_id) {
+      const group = await prisma.group.findUnique({
+        where: {
+          id: group_id
+        },
+        include: {
+          users: {
+            include: {
+              groups: {
+                include: {
+                  groupTask: true,
+                  users: true
+                },
+              },
+              tasks: true
+            }
+          }
+        }
+      });
+
+      const users = group?.users || [];
+
+      for (const user of users) {
+        pubsub.publish('USER_UPDATE', {
+          user: user
+        });
+      }
+    }
+
     res.status(200).json(new_task);
   } catch (e) {
     console.error(e);
