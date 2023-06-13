@@ -1,9 +1,14 @@
 {
   "compilerOptions": {
-    "target": "ES2022",
-    "module": "NodeNext",
+    "rootDirs": ["src"],
+    "outDir": "dist",
+    "lib": ["es2020"],
+    "target": "es2020",
+    "module": "esnext",
+    "moduleResolution": "node",
     "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true, 
+    "types": ["node", "jest"],
+    "forceConsistentCasingInFileNames": true,
     "strict": true,
     "skipLibCheck": true,
   }

@@ -1,201 +1,58 @@
-import express from "express";
-import { Prisma } from "@prisma/client";
-import dotenv from "dotenv";
-import morgan from "morgan";
-import fetch from "node-fetch";
+import { ApolloServer } from '@apollo/server';
+import { expressMiddleware } from '@apollo/server/express4';
+import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
+import { createServer } from 'http';
+import { makeExecutableSchema } from '@graphql-tools/schema';
+import { WebSocketServer } from 'ws';
+import { useServer } from 'graphql-ws/lib/use/ws';
+import bodyParser from 'body-parser';
+import cors from 'cors';
 
-import prisma from "./prisma.js";
+import { app } from './app.js';
+import { typeDefs } from './graphql/typedDefs.js';
+import { resolvers } from './graphql/resolvers.js';
 
-dotenv.config();
+// Create the schema, which will be used separately by ApolloServer and
+// the WebSocket server.
+const schema = makeExecutableSchema({ typeDefs, resolvers });
 
-const app = express();
+// Create an Express app and HTTP server; we will attach both the WebSocket
+// server and the ApolloServer to this HTTP server.
+const httpServer = createServer(app);
+
+// Create our WebSocket server using the HTTP server we just set up.
+const wsServer = new WebSocketServer({
+  server: httpServer,
+  path: '/graphql',
+});
+// Save the returned server's info so we can shutdown this server later
+const serverCleanup = useServer({ schema }, wsServer);
+
+// Set up ApolloServer.
+const server = new ApolloServer({
+  schema,
+  plugins: [
+    // Proper shutdown for the HTTP server.
+    ApolloServerPluginDrainHttpServer({ httpServer }),
+
+    // Proper shutdown for the WebSocket server.
+    {
+      async serverWillStart() {
+        return {
+          async drainServer() {
+            await serverCleanup.dispose();
+          },
+        };
+      },
+    },
+  ],
+});
+
+await server.start();
+app.use('/graphql', cors<cors.CorsRequest>(), bodyParser.json(), expressMiddleware(server));
+
 const PORT = process.env.PORT || 8000;
-
-export interface TypedRequestBody<T> extends Express.Request {
-  body: T;
-}
-
-interface add_task {
-  user_id?: string;
-  task: Prisma.TaskCreateInput;
-  group_id?: string;
-}
-
-app.use(express.json());
-app.use(morgan("dev"));
-
-app.get("/", (req, res) => {
-  res.send("Hello World!");
-});
-
-app.get("/api/generate_id", async (req, res) => {
-  const user = await prisma.user.create({
-    data: {},
-  });
-
-  res.json(user);
-});
-
-app.post("/api/get_tasks", async (req: TypedRequestBody<add_task>, res) => {
-  const { user_id } = req.body;
-
-  try {
-    const tasks = await prisma.task.findMany({
-      where: {
-        userId: user_id,
-      },
-    });
-    res.status(200).json(tasks);
-  } catch (e) {
-    console.error(e);
-    res.status(400).json(e);
-  }
-});
-
-app.post('/api/add_task', async (req: TypedRequestBody<add_task>, res) => {
-  const { user_id, task, group_id } = req.body;
-  try {
-    const new_task = await prisma.task.create({
-      data: {
-        name: task.name,
-        location: task.location,
-        latitude: task.latitude,
-        longitude: task.longitude,
-        userId: user_id || undefined,
-        groupId: group_id || undefined,
-      }
-    });
-    res.status(200).json(new_task);
-  } catch (e) {
-    console.error(e);
-    res.status(400).json(e);
-  }
-});
-
-app.post("/api/complete_task", async (req, res) => {
-  const { user_id, task_id } = req.body;
-
-  try {
-    const completed_task = await prisma.task.update({
-      where: {
-        id: task_id,
-        userId: user_id,
-      },
-      data: {
-        completed: true,
-      },
-    });
-
-    res.status(200).json(completed_task);
-  } catch (e) {
-    console.error(e);
-    res.status(400).json(e);
-  }
-});
-
-app.post("/api/delete_task", async (req, res) => {
-  const { user_id, task_id } = req.body;
-
-  try {
-    const deleted_task = await prisma.task.delete({
-      where: {
-        id: task_id,
-        userId: user_id,
-      },
-    });
-
-    res.status(200).json(deleted_task);
-  } catch (e) {
-    console.error(e);
-    res.status(400).json(e);
-  }
-});
-
-// get all the groups of the user
-app.post("/api/get_groups", async (req, res) => {
-  const { user_id } = req.body;
-  try {
-    const groups = await prisma.user.findUnique({
-      where: {
-        id: user_id,
-      },
-      include: {
-        groups: true,
-      },
-    });
-    res.status(200).json(groups);
-  } catch (e) {
-    console.error(e);
-    res.status(400).json(e);
-  }
-});
-
-app.post("/api/create_group", async (req, res) => {
-  const { group_name, user_id } = req.body;
-  try {
-    const new_group = await prisma.group.create({
-      data: {
-        name: group_name,
-        users: {
-          connect: {
-            id: user_id,
-          },
-        },
-      },
-    });
-    res.status(200).json(new_group);
-  } catch (e) {
-    console.error(e);
-    res.status(400).json(e);
-  }
-});
-
-app.post("/api/join_group", async (req, res) => {
-  const { user_id, group_id } = req.body;
-  try {
-    const join_group = await prisma.group.update({
-      where: {
-        id: group_id,
-      },
-      data: {
-        users: {
-          connect: {
-            id: user_id,
-          },
-        },
-      },
-      include: {
-        users: true,
-      },
-    });
-    res.status(200).json(join_group);
-  } catch (e) {
-    console.error(e);
-    res.status(400).json(e);
-  }
-});
-
-app.get("/api/search_location", async (req, res) => {
-  try {
-    const { query, latitude, longitude } = req.query as {
-      query: string;
-      latitude: string;
-      longitude: string;
-    };
-    const radius = 1000;
-    console.log("Search params:", query, latitude, longitude)
-  
-    const response = await fetch(
-      `https://maps.googleapis.com/maps/api/place/nearbysearch/json?keyword=${query}&location=${latitude}%2C${longitude}&radius=${radius}&key=${process.env.GOOGLE_MAPS_API}`
-    );
-    const data = await response.json();
-    res.status(200).json(data);
-  } catch (e) {
-    console.error(e);
-    res.status(400).json(e);
-  }
-});
-
-app.listen(PORT, () => {
-  console.log(`[server]: Server is running at http://localhost:${PORT}`);
+// Now that our HTTP server is fully set up, we can listen to it.
+httpServer.listen(PORT, () => {
+  console.log(`Server is now running on http://localhost:${PORT}/graphql`);
 });
