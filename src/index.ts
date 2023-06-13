@@ -35,7 +35,7 @@ app.get("/api/generate_id", async (req, res) => {
   res.json(user);
 });
 
-app.post("/api/check_id", async (req: TypedRequestBody<any>, res) => {
+app.post("/api/check_id", async (req, res) => {
   const { user_id } = req.body;
 
   try {
@@ -49,6 +49,19 @@ app.post("/api/check_id", async (req: TypedRequestBody<any>, res) => {
     console.error(e);
     res.status(400).json(e);
   }
+})
+
+app.post("/api/create_user", async (req, res) => {
+  const { user_id } = req.body;
+  console.log(`Creating new user '${user_id}'.`)
+
+  const user = await prisma.user.create({
+    data: {
+      id: user_id
+    }
+  })
+  res.status(200).json(user);
+  console.log(`Created new user '${user_id}'.`)
 })
 
 app.post("/api/get_tasks", async (req: TypedRequestBody<add_task>, res) => {
