@@ -25,18 +25,6 @@ app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
-app.get("/api/generate_id", async (req, res) => {
-  const user = await prisma.user.create({
-    data: {},
-  });
-
-  pubsub.publish("USER_CREATED", {
-    userAdded: user,
-  });
-
-  res.json(user);
-});
-
 app.post("/api/check_id", async (req, res) => {
   const { user_id } = req.body;
 
@@ -51,6 +39,18 @@ app.post("/api/check_id", async (req, res) => {
     console.error(e);
     res.status(400).json(e);
   }
+});
+
+app.get("/api/generate_id", async (req, res) => {
+  const user = await prisma.user.create({
+    data: {},
+  });
+
+  pubsub.publish("USER_CREATED", {
+    userAdded: user,
+  });
+
+  res.json(user);
 });
 
 app.post("/api/create_user", async (req, res) => {
@@ -113,6 +113,37 @@ app.post("/api/get_tasks", async (req: TypedRequestBody<add_task>, res) => {
   }
 });
 
+const publish_update = async (group_id: string | null | undefined) => {
+  if (group_id) {
+    const group = await prisma.group.findUnique({
+      where: {
+        id: group_id
+      },
+      include: {
+        users: {
+          include: {
+            groups: {
+              include: {
+                groupTask: true,
+                users: true
+              },
+            },
+            tasks: true
+          }
+        }
+      }
+    });
+
+    const users = group?.users || [];
+
+    for (const user of users) {
+      pubsub.publish('USER_UPDATE', {
+        user: user
+      });
+    }
+  }
+}
+
 app.post("/api/add_task", async (req: TypedRequestBody<add_task>, res) => {
   const { user_id, task, group_id } = req.body;
   try {
@@ -120,6 +151,7 @@ app.post("/api/add_task", async (req: TypedRequestBody<add_task>, res) => {
       data: {
         name: task.name,
         location: task.location,
+        vicinity: task.vicinity,
         latitude: task.latitude,
         longitude: task.longitude,
         userId: user_id || undefined,
@@ -127,34 +159,7 @@ app.post("/api/add_task", async (req: TypedRequestBody<add_task>, res) => {
       },
     });
 
-    if (group_id) {
-      const group = await prisma.group.findUnique({
-        where: {
-          id: group_id
-        },
-        include: {
-          users: {
-            include: {
-              groups: {
-                include: {
-                  groupTask: true,
-                  users: true
-                },
-              },
-              tasks: true
-            }
-          }
-        }
-      });
-
-      const users = group?.users || [];
-
-      for (const user of users) {
-        pubsub.publish('USER_UPDATE', {
-          user: user
-        });
-      }
-    }
+    publish_update(user_id);
 
     res.status(200).json(new_task);
   } catch (e) {
@@ -163,63 +168,19 @@ app.post("/api/add_task", async (req: TypedRequestBody<add_task>, res) => {
   }
 });
 
-app.post("/api/complete_task", async (req, res) => {
-  const { user_id, task_id } = req.body;
-
-  try {
-    const completed_task = await prisma.task.update({
-      where: {
-        id: task_id,
-        userId: user_id,
-      },
-      data: {
-        completed: true,
-      },
-    });
-
-    res.status(200).json(completed_task);
-  } catch (e) {
-    console.error(e);
-    res.status(400).json(e);
-  }
-});
-
 app.post("/api/delete_task", async (req, res) => {
-  const { user_id, task_id } = req.body;
+  const { task_id } = req.body;
 
   try {
     const deleted_task = await prisma.task.delete({
       where: {
         id: task_id,
-        userId: user_id,
       },
     });
+
+    publish_update(deleted_task.groupId);
 
     res.status(200).json(deleted_task);
-  } catch (e) {
-    console.error(e);
-    res.status(400).json(e);
-  }
-});
-
-// get all the groups of the user
-app.post("/api/get_groups", async (req, res) => {
-  const { user_id } = req.body;
-  try {
-    const groups = await prisma.user.findUnique({
-      where: {
-        id: user_id,
-      },
-      include: {
-        groups: {
-          include: {
-            groupTask: true,
-            users: true
-          }
-        }
-      },
-    });
-    res.status(200).json(groups);
   } catch (e) {
     console.error(e);
     res.status(400).json(e);
@@ -264,6 +225,9 @@ app.post("/api/join_group", async (req, res) => {
         users: true,
       },
     });
+
+    publish_update(group_id);
+
     res.status(200).json(join_group);
   } catch (e) {
     console.error(e);
