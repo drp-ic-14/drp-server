@@ -28,6 +28,7 @@ model Task {
   id        Int     @id @default(autoincrement())
   name      String
   location  String
+  vicinity String
   latitude  Float
   longitude Float
   completed Boolean @default(false)
