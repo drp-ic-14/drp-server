@@ -31,7 +31,7 @@ model Task {
   vicinity String
   latitude  Float
   longitude Float
-  completed Boolean @default(false)
+  description String?
   groupTask Boolean @default(false)
   user      User?   @relation("UserTasks", fields: [userId], references: [id])
   group     Group?  @relation("GroupTasks", fields: [groupId], references: [id])

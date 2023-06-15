@@ -159,7 +159,33 @@ app.post("/api/add_task", async (req: TypedRequestBody<add_task>, res) => {
       },
     });
 
-    publish_update(user_id);
+    publish_update(group_id);
+
+    res.status(200).json(new_task);
+  } catch (e) {
+    console.error(e);
+    res.status(400).json(e);
+  }
+});
+
+app.post("/api/update_task", async (req, res) => {
+  const { task_id, task } = req.body;
+  try {
+    const new_task = await prisma.task.update({
+      where:{
+        id: task_id,
+      },
+      data: {
+        name: task.name,
+        location: task.location,
+        vicinity: task.vicinity,
+        latitude: task.latitude,
+        longitude: task.longitude,
+        description: task.description,
+      },
+    });
+
+    publish_update(new_task.groupId);
 
     res.status(200).json(new_task);
   } catch (e) {
