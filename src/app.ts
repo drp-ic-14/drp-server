@@ -282,6 +282,25 @@ app.post("/api/leave_group", async (req, res) => {
 
     publish_update(group_id);
 
+    const user = await prisma.user.findUnique({
+      where: {
+        id: user_id
+      },
+      include: {
+        groups: {
+          include: {
+            groupTask: true,
+            users: true
+          },
+        },
+        tasks: true
+      }
+    });
+
+    pubsub.publish('USER_UPDATE', {
+      user: user
+    });
+
     res.status(200).json(leave_group);
   } catch (e) {
     console.error(e);
