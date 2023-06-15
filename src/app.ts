@@ -261,6 +261,34 @@ app.post("/api/join_group", async (req, res) => {
   }
 });
 
+app.post("/api/leave_group", async (req, res) => {
+  const { user_id, group_id } = req.body;
+  try {
+    const leave_group = await prisma.group.update({
+      where: {
+        id: group_id,
+      },
+      data: {
+        users: {
+          disconnect: {
+            id: user_id,
+          },
+        },
+      },
+      include: {
+        users: true,
+      },
+    });
+
+    publish_update(group_id);
+
+    res.status(200).json(leave_group);
+  } catch (e) {
+    console.error(e);
+    res.status(400).json(e);
+  }
+});
+
 app.get("/api/search_location", async (req, res) => {
   try {
     const { query, latitude, longitude } = req.query as {
