@@ -21,6 +21,7 @@ export const typeDefs = gql`
     location: String,
     latitude: Float,
     longitude: Float,
+    vicinity: String,
     completed: Boolean
     groupTask: Boolean
     user: User
